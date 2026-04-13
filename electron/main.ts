@@ -2,6 +2,7 @@ import { app, BrowserWindow, ipcMain, dialog, Menu } from 'electron';
 import { join } from 'path';
 import { copyFileSync } from 'fs';
 import * as db from './database';
+import { autoUpdater } from 'electron-updater';
 
 // Pin userData to a stable directory that never shifts when the app name changes
 app.setPath('userData', join(app.getPath('appData'), 'finance-manager-v3'));
@@ -41,6 +42,16 @@ function buildMenu(): void {
       label: app.name,
       submenu: [
         { role: 'about' },
+        {
+          label: 'Check for Updates…',
+          click() {
+            if (!app.isPackaged) {
+              void dialog.showMessageBox({ message: 'Auto-update is disabled in development.' });
+              return;
+            }
+            void autoUpdater.checkForUpdates();
+          },
+        },
         { type: 'separator' },
         { role: 'services' },
         { type: 'separator' },
@@ -145,6 +156,49 @@ function buildMenu(): void {
   Menu.setApplicationMenu(template);
 }
 
+// ─── Auto-updater ───
+
+function setupAutoUpdater(): void {
+  if (!app.isPackaged) return; // skip in dev
+
+  autoUpdater.autoDownload = true;
+  autoUpdater.autoInstallOnAppQuit = true;
+
+  autoUpdater.on('update-available', (info) => {
+    if (!mainWindow) return;
+    void dialog.showMessageBox(mainWindow, {
+      type: 'info',
+      title: 'Update Available',
+      message: `Version ${info.version} is available.`,
+      detail: 'Downloading in the background — you\'ll be prompted to restart when it\'s ready.',
+      buttons: ['OK'],
+    });
+  });
+
+  autoUpdater.on('update-downloaded', () => {
+    if (!mainWindow) return;
+    void dialog.showMessageBox(mainWindow, {
+      type: 'info',
+      title: 'Update Ready',
+      message: 'Update downloaded.',
+      detail: 'Restart now to install the new version, or it will be applied automatically on next launch.',
+      buttons: ['Restart Now', 'Later'],
+      defaultId: 0,
+      cancelId: 1,
+    }).then(({ response }) => {
+      if (response === 0) autoUpdater.quitAndInstall();
+    });
+  });
+
+  autoUpdater.on('error', (err) => {
+    console.error('Auto-updater error:', err);
+  });
+
+  // Check immediately on launch, then every 4 hours
+  void autoUpdater.checkForUpdates();
+  setInterval(() => { void autoUpdater.checkForUpdates(); }, 4 * 60 * 60 * 1000);
+}
+
 // ─── IPC: Database ───
 
 ipcMain.handle('db:init', () => {
@@ -180,6 +234,7 @@ ipcMain.handle('db:getAllSettlements', () => {
 app.whenReady().then(() => {
   buildMenu();
   createWindow();
+  setupAutoUpdater();
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
