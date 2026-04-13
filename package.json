@@ -17,7 +17,6 @@
   "dependencies": {
     "better-sqlite3": "^12.9.0",
     "date-fns": "^4.1.0",
-    "electron-updater": "^6.8.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.12.0",
@@ -54,23 +53,30 @@
       "out/**/*",
       "node_modules/better-sqlite3/**/*"
     ],
-    "publish": {
-      "provider": "github",
-      "owner": "andydavy-7",
-      "repo": "my-finance-manager"
-    },
     "mac": {
       "target": [
-        { "target": "dmg", "arch": ["arm64"] },
-        { "target": "zip", "arch": ["arm64"] }
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64"
+          ]
+        }
       ],
       "category": "public.app-category.finance",
       "icon": "build/icon.icns"
     },
     "dmg": {
       "contents": [
-        { "x": 130, "y": 220 },
-        { "x": 410, "y": 220, "type": "link", "path": "/Applications" }
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
       ]
     }
   }
