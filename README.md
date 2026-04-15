@@ -18,10 +18,35 @@ Built as a native macOS Electron app with local SQLite persistence — no accoun
 
 - **Electron** — native macOS app shell
 - **React + TypeScript** — UI
+- **react-router-dom** — client-side routing
 - **better-sqlite3** — local SQLite database (main process)
 - **Zustand** — state management
 - **electron-vite** — build tooling
 - **recharts** — analytics charts
+- **date-fns** — date utilities
+- **xlsx** — CSV parsing for bank statements
+
+## Project Structure
+
+```
+electron/
+  main.ts        Main process — BrowserWindow, IPC handlers, native menus
+  preload.ts     contextBridge exposing window.electronAPI to renderer
+  database.ts    All SQLite logic (better-sqlite3, synchronous)
+
+src/
+  domain/
+    entities/    Pure data types (Transaction, MonthlyData, etc.)
+    services/    Business logic (StatementParser, CategorizationService, ReconciliationService)
+  application/
+    stores/      Zustand store — all app state
+  infrastructure/
+    database/    DatabaseService.ts — thin async IPC client
+  data/          Static config (categories, default splits)
+  presentation/
+    pages/       DashboardPage, AnalyticsPage
+    components/  UI components
+```
 
 ## Data Storage
 
@@ -32,6 +57,11 @@ All data is stored locally at:
 ```
 
 No data ever leaves your machine.
+
+## Requirements
+
+- macOS on Apple Silicon (arm64) — M1 or later
+- Node.js 18+
 
 ## Dev Setup
 
