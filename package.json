@@ -1,7 +1,7 @@
 {
   "name": "finance-manager-v3",
   "private": true,
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "Monthly expense reconciliation system for managing shared household finances with automated settlement calculations",
   "main": "out/main/main.js",
   "author": "Andrew Davy",
