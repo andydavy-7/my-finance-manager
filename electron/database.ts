@@ -161,7 +161,20 @@ export function importFromFile(sourcePath: string): boolean {
 // ─── Helper ───
 
 function isoDate(d: Date): string {
-  return d.toISOString().slice(0, 10);
+  // Use LOCAL date components, not toISOString() (which converts to UTC and can
+  // shift the date back a day in positive-offset timezones like Asia/Colombo).
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+// Reconstruct a Date from a stored 'yyyy-MM-dd' string at LOCAL midnight.
+// `new Date('yyyy-MM-dd')` parses as UTC midnight, which renders as the wrong
+// day in some timezones. Building from components keeps the date exactly as stored.
+function parseLocalDate(s: string): Date {
+  const [year, month, day] = s.split('-').map(Number);
+  return new Date(year, month - 1, day);
 }
 
 // ─── Read operations ───
@@ -184,7 +197,7 @@ export function loadMonthlyData(id: string): MonthlyData | null {
   for (const r of txRows) {
     const tx: Transaction = {
       id: r.id as string,
-      date: new Date(r.date as string),
+      date: parseLocalDate(r.date as string),
       refNo: (r.ref_no as string) ?? '',
       particulars: r.particulars as string,
       amount: r.amount as number,
@@ -267,7 +280,7 @@ export function getAllTransactionsAllTime(): AllTimeTransaction[] {
     id: r.id as string,
     monthId: r.monthly_data_id as string,
     owner: r.owner as 'andrew' | 'shammi',
-    date: new Date(r.date as string),
+    date: parseLocalDate(r.date as string),
     refNo: (r.ref_no as string) ?? '',
     particulars: r.particulars as string,
     amount: r.amount as number,
