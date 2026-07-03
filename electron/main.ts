@@ -3,8 +3,15 @@ import { join } from 'path';
 import { copyFileSync } from 'fs';
 import * as db from './database';
 
-// Pin userData to a stable directory that never shifts when the app name changes
-app.setPath('userData', join(app.getPath('appData'), 'finance-manager-v3'));
+// Pin userData so the database location never shifts when the app name changes.
+// Production: ~/Library/Application Support/finance-manager-v3
+// Dev: <repo>/dev-data — the dev database lives alongside the code and never
+// touches production data. (process.cwd() is the repo root under `npm run dev`.)
+if (app.isPackaged) {
+  app.setPath('userData', join(app.getPath('appData'), 'finance-manager-v3'));
+} else {
+  app.setPath('userData', join(process.cwd(), 'dev-data'));
+}
 
 let mainWindow: BrowserWindow | null = null;
 

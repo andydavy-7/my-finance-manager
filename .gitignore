@@ -36,3 +36,9 @@ lerna-debug.log*
 # Database and backup files (user data — never commit)
 backups/
 *.db
+
+# Dev database (lives in repo, never commit)
+dev-data/
+
+# Personal bank statements — never commit
+statements/
